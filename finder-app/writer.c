@@ -6,14 +6,14 @@ int main(int argc, char * argv[] )
     // Open the LOG
     openlog(NULL, 0, LOG_USER);
 
-    // Check the number of arguments
-    if (argc < 2)
+    // Check the number of arguments -> First argument is the program name
+    if (argc < 3)
     {
         syslog(LOG_ERR, "Invalid number of arguments: %d", argc);
         return 1;
     }
 
-    char* filename = argv[1];
+    const char* filename = argv[1];
 
     // Open file in write mode
     FILE *fptr = fopen(filename, "w");
@@ -26,7 +26,7 @@ int main(int argc, char * argv[] )
     }
 
     // Write to the file
-    char* str = argv[2];
+    const char* str = argv[2];
     syslog(LOG_DEBUG, "Writing %s to %s", str, filename);
     if (fputs(str, fptr) < 0)
     {
