@@ -1,4 +1,9 @@
 #include "systemcalls.h"
+#include <sys/wait.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+
 
 /**
  * @param cmd the command to execute with system()
@@ -11,13 +16,11 @@ bool do_system(const char *cmd)
 {
 
 /*
- * TODO  add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    return system(cmd) >= 0;
 }
 
 /**
@@ -47,7 +50,7 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    // command[count] = command[count];
 
 /*
  * TODO:
@@ -59,9 +62,33 @@ bool do_exec(int count, ...)
  *
 */
 
+    bool success = true;
+    pid_t kidpid = fork();
+
+    if (kidpid < 0)
+    {
+        // Failed to fork!
+        return false;
+    } else if (kidpid > 0)
+    {
+        // We are the parent
+        // Wait for the kid and check the status
+        int status;
+        pid_t res = waitpid(kidpid, &status, 0);
+        if (res < 0 || !(WIFEXITED(status) == true &&  WEXITSTATUS(status) == EXIT_SUCCESS))
+            return false;
+            
+    } 
+    else 
+    {
+        // We are the child
+        execv(command[0], command);
+    }
+
+
     va_end(args);
 
-    return true;
+    return success;
 }
 
 /**
@@ -93,7 +120,34 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 
+    bool success = true;
+    int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd < 0) { perror("open"); abort(); }
+    int kidpid = fork();
+    if (kidpid < 0) 
+    {
+     perror("fork"); abort();
+    } 
+    else if (kidpid > 0) 
+    {
+        // We are the parent
+        close(fd);
+        // Wait for the kid and check the status
+        int status;
+        pid_t res = waitpid(kidpid, &status, 0);
+        if (res < 0 || !(WIFEXITED(status) == true &&  WEXITSTATUS(status) == EXIT_SUCCESS))
+            return false;
+    }
+    else
+    {
+        // Children
+        if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
+        close(fd);
+        execv(command[0], command);
+    }
+
+
     va_end(args);
 
-    return true;
+    return success;
 }
