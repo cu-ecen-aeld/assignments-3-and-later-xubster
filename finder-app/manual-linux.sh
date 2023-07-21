@@ -60,6 +60,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 fi
 
 echo "Adding the Image in outdir"
+cp ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ${OUTDIR}/Image
 
 echo "Creating the staging directory for the root filesystem"
 cd "$OUTDIR"
@@ -111,13 +112,14 @@ make CONFIG_PREFIX="${OUTDIR}/rootfs" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE
 echo "Busybox was installed succesfully"
 
 echo "Library dependencies"
+cd "${OUTDIR}/rootfs"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
 
 # We find the location of sysroot for our compiler
-SYSROOT=$($(CROSS_COMPILE)-gcc -print-sysroot)
+SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
 
 # Using pattern matching to grep the dependencies
 LD_ARG="s/\s\+\[Requesting program interpreter: \(\/lib\/\(\S\|.\)*\)\]/\1/"
@@ -171,7 +173,7 @@ cp ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
 
 # TODO: Chown the root directory
 echo "Make root the owner of the root directory "
-sudo chown -R root:root ${ROOTFS}
+sudo chown -R root:root ${OUTDIR}/rootfs
 
 # TODO: Create initramfs.cpio.gz
 echo "Creating the cpio archive"

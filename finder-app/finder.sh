@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 
 #This script expectes two arguments, $1 is a path to a directory on the filesystem, 
 #refered to as filedir, and $2 is a text string which will be searched within these files,
