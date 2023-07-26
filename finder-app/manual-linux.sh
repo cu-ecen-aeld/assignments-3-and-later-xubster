@@ -53,10 +53,10 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
 
     # 4- Build modules (modules) and devicetree file (dtbs).
-    echo "    -Build modules" 
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules
+    #echo "    -Build modules" 
+    #make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules
     echo "    -Build device tree file"
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} dtbs
+    make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} dtbs
 fi
 
 echo "Adding the Image in outdir"
@@ -104,7 +104,7 @@ fi
 # TODO: Make and install busybox
 # Make and install
 echo "    -Making " 
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
+make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 # Install to rootfs
 echo "    -Installing busybox to ${OUTDIR}/rootfs" 
 make CONFIG_PREFIX="${OUTDIR}/rootfs" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
